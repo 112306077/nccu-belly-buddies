@@ -178,7 +178,10 @@ export default function RestaurantDetails() {
 										disabled={
 											room.groupMembers.length >= room.numofPeople ||
 											isSubmitting ||
-											room.creatorId === data?.user.id
+											room.creatorId === data?.user.id ||
+											room.groupMembers.some(
+												member => member.userId === data?.user.id,
+											)
 										}
 									>
 										Join Meetup

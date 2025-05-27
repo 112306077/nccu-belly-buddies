@@ -1,10 +1,17 @@
-import { route, type RouteConfig } from '@react-router/dev/routes'
+import {
+	index,
+	layout,
+	route,
+	type RouteConfig,
+} from '@react-router/dev/routes'
 
 // This should be imported and used as `...customizedWebRoutes` in `customizedRoutes` of `/app/routes/web/routes.ts`
 export const bbWebRoutes = [
-	route('/', './routes/web/index/route.tsx'),
-	route('/restaurant/:id', './routes/web/restaurant/route.tsx'),
-	route('/my-rooms', './routes/web/my-rooms/route.tsx'),
+	layout('./routes/web/bbapp.tsx', [
+		route('/', './routes/web/index/route.tsx'),
+		route('/restaurant/:id', './routes/web/restaurant/route.tsx'),
+		route('/my-rooms', './routes/web/my-rooms/route.tsx'),
+	]),
 ] satisfies RouteConfig
 
 // This should be imported and used as `...customizedAdminRoutes` in `customizedRoutes` of `/app/routes/papa/admin/routes.ts`

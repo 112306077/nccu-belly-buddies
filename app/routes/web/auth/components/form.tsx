@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Form } from 'react-router'
 
+import { Loader2 } from 'lucide-react'
+
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
@@ -11,15 +13,17 @@ export function LoginForm({
 	onLogin,
 	showOtpInput,
 	onVerifyOtp,
+	isLoading,
 	className,
 	...props
 }: React.ComponentProps<'div'> & {
 	onLogin: (email: string) => void
 	showOtpInput: boolean
 	onVerifyOtp: (email: string, otp: string) => void
+	isLoading: boolean
 }) {
 	const [email, setEmail] = useState('')
-	const [otp, setOtp] = useState('')  //新增
+	const [otp, setOtp] = useState('') //新增
 
 	return (
 		<div className={cn('flex flex-col gap-6', className)} {...props}>
@@ -59,8 +63,12 @@ export function LoginForm({
 										required
 									/>
 								</div>
-								<Button type="submit" className="w-full">
-									使用 Email 繼續
+								<Button type="submit" className="w-full" disabled={isLoading}>
+									{isLoading ? (
+										<Loader2 className="animate-spin" />
+									) : (
+										'使用 Email 繼續'
+									)}
 								</Button>
 							</div>
 						</Form>
@@ -82,10 +90,17 @@ export function LoginForm({
 								</div>
 								<div className="grid gap-2">
 									<Label htmlFor="otp">輸入 OTP 一次性驗證碼</Label>
-									<Input id="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="123456" required />
+									<Input
+										id="otp"
+										type="text"
+										value={otp}
+										onChange={e => setOtp(e.target.value)}
+										placeholder="123456"
+										required
+									/>
 								</div>
-								<Button type="submit" className="w-full">
-									登入
+								<Button type="submit" className="w-full" disabled={isLoading}>
+									{isLoading ? <Loader2 className="animate-spin" /> : '登入'}
 								</Button>
 							</div>
 						</Form>

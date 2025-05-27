@@ -1,7 +1,5 @@
 import { redirect } from 'react-router'
 
-import { or } from 'drizzle-orm'
-
 import { auth } from '~/lib/auth/auth.server'
 import { db } from '~/lib/db/db.server'
 
@@ -18,13 +16,23 @@ export async function loader({ request }: Route.LoaderArgs) {
 		throw redirect('/auth')
 	}
 
-	const myGroups = await db.query.group.findMany({
-		where: (group, { eq }) => or(eq(group.creatorId, session.user.id)),
-		with: {
-			restaurant: true,
-			creator: true,
-			groupMembers: true,
-		},
+	const myGroups = await db.transaction(async tx => {
+		const groupIds = await tx.query.groupMember.findMany({
+			where: (groupMember, { eq }) => eq(groupMember.userId, session.user.id),
+		})
+
+		return await tx.query.group.findMany({
+			where: (group, { inArray }) =>
+				inArray(
+					group.id,
+					groupIds.map(g => g.groupId),
+				),
+			with: {
+				restaurant: true,
+				creator: true,
+				groupMembers: true,
+			},
+		})
 	})
 
 	return { myGroups }

@@ -4,6 +4,8 @@ import { auth } from '~/lib/auth/auth.server'
 import { db } from '~/lib/db/db.server'
 import { rating } from '~/lib/db/schema/rating'
 
+import type { Route } from './+types/rating'
+
 /**
  * encType: form
  * {
@@ -44,4 +46,31 @@ export async function action({ request }: { request: Request }) {
 		.returning()
 
 	return { msg: '評分成功', data: result[0] }
+}
+
+export const loader = async ({ request }: Route.LoaderArgs) => {
+	const url = new URL(request.url)
+
+	const searchParams = url.searchParams
+
+	const restaurantId = searchParams.get('restaurantId')
+	const userId = searchParams.get('userId')
+
+	if (!restaurantId || !userId) {
+		throw new Response('請提供餐廳ID和用戶ID', { status: 400 })
+	}
+
+	// Getting rating result if exists
+	const rating = await db.query.rating.findFirst({
+		where(fields, operators) {
+			return operators.and(
+				operators.eq(fields.restaurantId, restaurantId),
+				operators.eq(fields.userId, userId),
+			)
+		},
+	})
+
+	console.log('rating', rating)
+
+	return { rating }
 }

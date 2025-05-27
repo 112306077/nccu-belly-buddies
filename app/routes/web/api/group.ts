@@ -31,10 +31,11 @@ export async function action({ request, params }: Route.ActionArgs) {
 	// 以下可以開始處理 user 與 group id
 	// ...
 
+	const formData = await request.formData()
+
 	switch (request.method) {
 		case 'POST':
 			// 從前端 POST 的 formData 中取得資料
-			const formData = await request.formData()
 			const groupFormData = {
 				name: formData.get('groupName'),
 				description: formData.get('groupDescription'),
@@ -108,13 +109,48 @@ export async function action({ request, params }: Route.ActionArgs) {
 		case 'PUT':
 			// 處理 PUT 請求，通常是用來更新現有的資源
 			// 例如：
-			// TODO: 更新群組資料
+
+			const groupFormUpdateData = {
+				id: groupId, // 這是從 params.id 取得的群組 ID
+				name: formData.get('groupName'),
+				description: formData.get('groupDescription'),
+				restaurantID: formData.get('restaurantID'),
+				status: formData.get('status'),
+				proposedBudget: formData.get('proposedBudget'),
+				foodPreference: formData.get('foodPreference'),
+				numofPeople: formData.get('numofPeople'),
+				startTime: formData.get('startTime'),
+				spokenLanguage: formData.get('spokenLanguage'),
+			}
+
+			if (
+				typeof groupFormUpdateData.name !== 'string' ||
+				typeof groupFormUpdateData.description !== 'string' ||
+				typeof groupFormUpdateData.restaurantID !== 'string' ||
+				typeof groupFormUpdateData.status !== 'string' ||
+				typeof groupFormUpdateData.proposedBudget !== 'string' ||
+				typeof groupFormUpdateData.foodPreference !== 'string' ||
+				Number.isNaN(groupFormUpdateData.numofPeople) ||
+				typeof groupFormUpdateData.startTime !== 'string' ||
+				typeof groupFormUpdateData.spokenLanguage !== 'string'
+			) {
+				return {
+					err: '請檢查輸入的資料是否正確',
+				} satisfies ConventionalActionResponse
+			}
+
 			const updatedGroup = await db
 				.update(schema.group)
 				.set({
-					name: '更新後的群組名稱',
-					description: '這是更新後的群組描述',
-					// ...其他欄位
+					name: groupFormUpdateData.name,
+					description: groupFormUpdateData.description,
+					restaurantID: groupFormUpdateData.restaurantID,
+					status: groupFormUpdateData.status,
+					proposedBudget: Number(groupFormUpdateData.proposedBudget),
+					foodPreference: groupFormUpdateData.foodPreference,
+					numofPeople: Number(groupFormUpdateData.numofPeople),
+					startTime: new Date(groupFormUpdateData.startTime),
+					spokenLanguage: groupFormUpdateData.spokenLanguage,
 				})
 				.where(eq(schema.group.id, groupId)) // 記得使用 where，不然所有資料都會變成 passed in value
 			// .where 的使用方式是：從 schemas 中找到 group 的 schema，然後 group table(schema) 的 id 要等於傳入的 groupId

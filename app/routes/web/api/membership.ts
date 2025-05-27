@@ -57,7 +57,7 @@ export async function action({
 				.where(eq(schema.group.id, groupId))
 
 			// 3. Check if user count >= group's member limit
-			if (userCount[0].count >= groupData[0].numOfPeople!) {
+			if (userCount[0].count >= groupData[0].numOfPeople) {
 				console.log(`Group ${groupId} is full. Cannot add more members.`)
 				await db
 					.update(schema.group)
@@ -70,7 +70,22 @@ export async function action({
 				} satisfies ConventionalActionResponse
 			}
 
-			// 4. Insert new member
+			// 4. Check if user is already a member
+			const existingMember = await db.query.groupMember.findFirst({
+				where: and(
+					eq(schema.groupMember.userId, user.id),
+					eq(schema.groupMember.groupId, groupId),
+				),
+			})
+
+			if (existingMember) {
+				return {
+					msg: '你已經是這個群組的成員了。',
+					data: null,
+				} satisfies ConventionalActionResponse
+			}
+
+			// 5. Insert new member
 			await db.insert(schema.groupMember).values({
 				groupId: groupId,
 				userId: user.id,
@@ -104,7 +119,7 @@ export async function action({
 				.where(
 					and(
 						eq(schema.groupMember.userId, user.id),
-						eq(schema.groupMember.groupId, schema.group.id),
+						eq(schema.groupMember.groupId, groupId),
 					),
 				)
 			return {
@@ -118,7 +133,7 @@ export async function action({
 				.where(
 					and(
 						eq(schema.groupMember.userId, user.id),
-						eq(schema.groupMember.groupId, schema.group.id),
+						eq(schema.groupMember.groupId, groupId),
 					),
 				)
 
